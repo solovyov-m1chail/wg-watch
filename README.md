@@ -285,3 +285,46 @@ enabled = yes
 
 <!-- Добавьте файл LICENSE (например, MIT) перед публикацией и держите эту строку в соответствии с ним. -->
 См. [LICENSE](LICENSE). Программа предоставляется **«как есть», без каких-либо гарантий**.
+
+## Скриншоты
+
+### Дашборд
+
+<p align="center">
+  <img src="screenshots/dashbord-light-theme.png" width="49%">
+  <img src="screenshots/dashbord-dark-theme.png" width="49%">
+</p>
+
+### Клиент онлайн
+
+<p align="center">
+  <img src="screenshots/peer-test-online-light.png" width="49%">
+  <img src="screenshots/peer-test-online-dark.png" width="49%">
+</p>
+
+### График трафика
+
+<p align="center">
+  <img src="screenshots/traffic-chart-light.png" width="49%">
+  <img src="screenshots/traffic-chart-dark.png" width="49%">
+</p>
+
+### Журнал событий
+
+<p align="center">
+  <img src="screenshots/events-light.png" width="49%">
+  <img src="screenshots/events-dark.png" width="49%">
+</p>
+
+### Вход
+
+![Страница входа](screenshots/login-ru.png)
+
+### Защита от некорректного имени клиента
+
+![Валидация имени клиента](screenshots/manager-validation-input.png)
+
+### Индикация недоступности демона
+
+![Демон недоступен](screenshots/daemon-unavailable.png)
+
