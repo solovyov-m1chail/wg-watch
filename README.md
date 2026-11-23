@@ -291,8 +291,8 @@ enabled = yes
 ### Дашборд
 
 <p align="center">
-  <img src="screenshots/dashbord-light-theme.png" width="49%">
-  <img src="screenshots/dashbord-dark-theme.png" width="49%">
+  <img src="screenshots/dashboard-light-theme.png" width="49%">
+  <img src="screenshots/dashboard-dark-theme.png" width="49%">
 </p>
 
 ### Клиент онлайн
