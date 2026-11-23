@@ -1,0 +1,21 @@
+[Unit]
+Description=WG-Watch Monitor Daemon API
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+EnvironmentFile=/opt/wg-watch/conf/wg-watch-daemon.env
+ExecStart=/opt/wg-watch/bin/wg-watch-daemon
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wg-watch-daemon
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!-- Файл: /opt/wg-watch/web/static/index.html -->
+<!-- Главная страница дашборда wg-watch (точка входа после логина). -->
+<!-- Шапка: логотип, hostInfo (pubkey + порт), индикатор демона (dot), переключатели языка и темы, -->
+<!-- выбор частоты обновления, бейдж пользователя, кнопки «Обновить», «Скачать журнал» и «Выйти», часы. -->
+<!-- Контент: блок статистики (#stats), вкладки фильтра пиров, кнопка «Создать клиента», -->
+<!-- контейнер карточек пиров (#peers), лента событий с сортировкой, счётчиком, сбросом фильтра и очисткой журнала. -->
+<!-- Баннер недоступного демона (#daemonBanner), контейнер toast-уведомлений (#toastContainer). -->
+<!-- Модалки: создание клиента, удаление клиента, очистка журнала событий, большой график трафика. -->
+<!-- Анти-FOUC: js/theme-init.js подключается синхронно в <head> до CSS. -->
+<!-- i18n через data-i18n / data-i18n-title / data-i18n-aria (словари в i18n-index.js, RU по умолчанию). -->
+<!-- Точка входа скриптов — <script type="module" src="js/app.js">; базовый путь задан -->
+<!-- через <base href="/wg-watch/">, чтобы относительные URL (api/, css/, js/, icons/) совпадали с URL_PREFIX бэкенда. -->
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<base href="/wg-watch/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="js/theme-init.js"></script>
+
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0b62d6">
+
+<title data-i18n="title">Wg-watch - dashboard</title>
+
+<link rel="stylesheet" href="css/app.css?v=20261040">
+</head>
+<body>
+
+<!-- Контейнер для всплывающих уведомлений. -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="daemon-banner" id="daemonBanner" role="alert" aria-live="assertive">
+  <div class="title">
+    <span class="pulse-dot" aria-hidden="true"></span>
+    <span data-i18n="daemonDownTitle">Monitoring daemon is not running</span>
+  </div>
+  <div data-i18n="daemonDownBody">
+    wg-watch-daemon.service is not active. Online/offline events are not recorded,
+    notifications are not sent.
+  </div>
+  <div class="hint" data-i18n="daemonDownHint">
+    Check: systemctl status wg-watch-daemon.service
+  </div>
+</div>
+
+<noscript>
+  <div style="padding:24px;text-align:center;color:var(--muted)">
+    This dashboard requires JavaScript.
+  </div>
+</noscript>
+
+<header>
+  <img class="logo" src="favicon.svg" alt="" width="26" height="26">
+  <h1> - watch</h1>
+  <span class="host" id="hostInfo">—</span>
+  <span class="dot" id="dot"></span>
+  <div class="spacer"></div>
+
+  <div class="toggle-group" id="langToggle" role="group"
+       aria-label="Language" data-i18n-title="ariaLanguage">
+    <button type="button" data-lang="ru">RU</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+
+  <!-- Переключатель темы оформлен через svg вместо img. -->
+  <div class="toggle-group" id="themeToggle" role="group"
+       aria-label="Theme" data-i18n-title="ariaTheme">
+    <button type="button" data-theme="light" data-i18n-title="themeLight" title="Light">
+      <svg class="icon"><use href="icons/sprite.svg#icon-sun"></use></svg>
+    </button>
+    <button type="button" data-theme="dark" data-i18n-title="themeDark" title="Dark">
+      <svg class="icon"><use href="icons/sprite.svg#icon-moon"></use></svg>
+    </button>
+    <button type="button" data-theme="auto" data-i18n-title="themeAuto" title="Auto">A</button>
+  </div>
+
+  <select id="refreshRate" class="events-sort" title="Refresh rate" data-i18n-title="refreshRate">
+    <option value="1000">1</option>
+    <option value="2000" selected>2</option>
+    <option value="5000">5</option>
+    <option value="10000">10</option>
+  </select>
+
+  <span class="badge" id="userInfo">—</span>
+
+  <!-- Кнопка обновления данных (reload). -->
+  <span class="badge btn" id="refreshBtn" role="button" tabindex="0"
+        title="Refresh" data-i18n-title="refreshTitle">
+    <svg class="icon"><use href="icons/sprite.svg#icon-reload"></use></svg>
+  </span>
+
+  <!-- Кнопка скачивания логов (download). -->
+  <span class="badge btn" id="downloadBtn" role="button" tabindex="0"
+        title="Download events.log" data-i18n-title="downloadTitle">
+    <svg class="icon"><use href="icons/sprite.svg#icon-download"></use></svg>
+  </span>
+
+  <span class="badge" id="clock" aria-hidden="true">--:--:--</span>
+  <span class="badge btn" id="logoutLink" role="button" tabindex="0"
+      data-i18n="logout">Log out</span>
+</header>
+
+<main>
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs-row">
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-filter="all" role="button" tabindex="0" aria-pressed="true" data-i18n="tabAll">All</div>
+      <div class="tab" data-filter="online" role="button" tabindex="0" aria-pressed="false" data-i18n="tabOnline">Online</div>
+      <div class="tab" data-filter="offline" role="button" tabindex="0" aria-pressed="false" data-i18n="tabOffline">Offline</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn-create" id="btnCreateClient" type="button">
+      <span>+</span> <span data-i18n="createClient">Создать клиента</span>
+    </button>
+  </div>
+
+  <div class="peers" id="peers">
+    <div class="empty" data-i18n="loading">Loading…</div>
+  </div>
+
+  <div class="events-header">
+    <h2 class="section" id="eventsTitle" data-i18n="events">Events feed</h2>
+    <span class="events-count" id="eventsCount" aria-live="polite"></span>
+    <button class="events-clear" id="eventsClear" type="button" title="Clear filter" aria-label="Clear filter">✕</button>
+
+    <!-- Кнопка Очистить журнал событий (events.log). -->
+    <button class="events-sort" id="eventsTruncate" type="button" data-i18n-title="clearEventsHint" aria-label="Clear events log" style="display: inline-flex; align-items: center; justify-content: center; padding: 4px 8px;">
+      <svg class="icon"><use href="icons/sprite.svg#icon-trash"></use></svg>
+    </button>
+
+    <select class="events-sort" id="eventsSort" aria-label="Sort" data-i18n-title="sortLabel" data-i18n-aria="sortLabel">
+      <option value="new"  data-i18n="sortNew">Newest first</option>
+      <option value="old"  data-i18n="sortOld">Oldest first</option>
+      <option value="type" data-i18n="sortType">By type</option>
+      <option value="name" data-i18n="sortName">By name</option>
+    </select>
+  </div>
+
+  <div class="events" id="events">
+    <div class="empty" data-i18n="loading">Loading…</div>
+  </div>
+</main>
+
+<!-- Модальное окно создания клиента. -->
+<div class="modal-overlay" id="createModal" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+  <div class="modal">
+    <h3 id="createModalTitle" data-i18n="createClientTitle">Новый клиент</h3>
+    <input type="text" id="newClientName" placeholder="misha-pc" autocomplete="off" spellcheck="false">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" type="button" data-i18n="cancel">Отмена</button>
+      <button class="modal-btn primary" id="btnConfirmCreate" type="button" data-i18n="create">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно удаления клиента. -->
+<div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal">
+    <h3 id="deleteModalTitle" data-i18n="deleteClientTitle">Удалить клиента?</h3>
+    <p style="margin: 0 0 20px 0; color: var(--text-soft);" id="deleteClientName"></p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" type="button" data-i18n="cancel">Отмена</button>
+      <button class="modal-btn danger" id="btnConfirmDelete" type="button" data-i18n="delete">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно очистки журнала событий. -->
+<div class="modal-overlay" id="clearEventsModal" role="dialog" aria-modal="true" aria-labelledby="clearEventsTitle">
+  <div class="modal">
+    <h3 id="clearEventsTitle" data-i18n="clearEventsTitle">Clear events log?</h3>
+    <p style="margin: 0 0 20px 0; color: var(--text-soft);" data-i18n="clearEventsBody">All records in events.log will be permanently deleted.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" type="button" data-i18n="cancel">Cancel</button>
+      <button class="modal-btn danger" id="btnConfirmClearEvents" type="button" data-i18n="clearEventsBtn">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно большого графика трафика. -->
+<div class="modal-overlay" id="bigChartModal" role="dialog" aria-modal="true" aria-labelledby="bigChartTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="bigChartTitle"></h3>
+      <button class="modal-close" id="bigChartClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="big-chart-container" id="bigChartContainer"></div>
+    <div class="chart-hint" id="bigChartHint"></div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!-- Файл: /opt/wg-watch/web/templates/login.html -->
+<!-- Шаблон страницы входа wg-watch: форма логина, переключатели темы и языка. -->
+<!-- Переменные от Flask: error (ключ ошибки), ban_seconds (секунд до конца бана), remember_days (срок «запомнить меня»). -->
+<html lang="ru" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<!-- CSP задаётся в nginx; инлайн-скриптов и стилей нет. -->
+<base href="/wg-watch/">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<!-- Анти-FOUC: общий с дашбордом theme-init.js, грузится синхронно до CSS. -->
+<script src="js/theme-init.js"></script>
+
+<!-- Фавиконки и иконки приложения. -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0b62d6">
+
+<title data-i18n="title">Wg-watch - login</title>
+
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+<!-- Встроенный SVG-спрайт для переключателя темы. -->
+<svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+  <!-- Переключатели языка и темы. -->
+  <div class="toggles">
+    <div class="toggle-group" id="langToggle" role="group"
+         aria-label="Language" data-i18n-title="ariaLanguage">
+      <button type="button" data-lang="ru">RU</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <div class="toggle-group" id="themeToggle" role="group"
+         aria-label="Theme" data-i18n-title="ariaTheme">
+      <button type="button" data-theme="light" data-i18n-title="themeLight" title="Light">
+        <svg class="icon"><use href="#icon-sun"></use></svg>
+      </button>
+      <button type="button" data-theme="dark" data-i18n-title="themeDark" title="Dark">
+        <svg class="icon"><use href="#icon-moon"></use></svg>
+      </button>
+      <button type="button" data-theme="auto" data-i18n-title="themeAuto" title="Auto">A</button>
+    </div>
+  </div>
+
+  <!-- Форма входа: novalidate отключает встроенные пузыри браузера, чтобы валидация была единой с дизайном (через JS и .field-error). -->
+  <form class="box" method="post" id="loginForm" novalidate>
+    <div class="brand">
+      <img class="logo" src="favicon.svg" alt="" width="34" height="34">
+      <h1> - watch</h1>
+    </div>
+    <p class="sub" data-i18n="sub">WireGuard Monitor &amp; Management</p>
+
+    <!-- Сообщение об ошибке: сервер передаёт ключ ошибки и секунды бана; JS на клиенте переводит его через I18N_LOGIN. -->
+    <div class="err" role="alert"
+         data-i18n-error="{{ error }}"
+         data-ban-seconds="{{ ban_seconds }}"></div>
+
+    <!-- Поле логина: обёртка позволяет разместить текст ошибки под полем. -->
+    <div class="form-group">
+      <label for="user" data-i18n="username">Username</label>
+      <input id="user" name="user" autocomplete="username" autocapitalize="off"
+             autocorrect="off" spellcheck="false" maxlength="256" autofocus required>
+      <!-- Сюда JS будет выводить ошибку (если поле пустое). -->
+      <span class="field-error" id="error-user"></span>
+    </div>
+
+    <!-- Поле пароля: аналогичная обёртка с контейнером для ошибки. -->
+    <div class="form-group">
+      <label for="password" data-i18n="password">Password</label>
+      <div class="pwd-wrap">
+        <input id="password" name="password" type="password"
+               autocomplete="current-password" maxlength="1024" required>
+        <button type="button" class="pwd-toggle" id="pwdToggle"
+                aria-label="Show password" data-i18n-title="showPassword"
+                aria-pressed="false">
+          <svg class="icon-eye" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg class="icon-eye-off" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <span class="field-error" id="error-password"></span>
+    </div>
+
+    <!-- Блок "Запомнить меня"  -->
+    <div class="form-group remember-row">
+      <label class="custom-checkbox">
+        <input type="checkbox" name="remember" value="1">
+        <span class="checkmark"></span>
+        <span class="label-text" data-i18n="rememberMe" data-days="{{ remember_days }}">Запомнить меня на 7 дней</span>
+      </label>
+    </div>
+
+    <button class="submit" type="submit" data-i18n="submit">Sign in</button>
+  </form>
+</div>
+
+<script type="module" src="js/login.js"></script>
+</body>
+</html>

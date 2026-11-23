@@ -1,0 +1,18 @@
+[Unit]
+Description=WG-Watch Client Manager API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=-/opt/wg-watch/conf/wg-watch-manager.env
+ExecStart=/opt/wg-watch/bin/wg-watch-manager
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wg-watch-manager
+
+[Install]
+WantedBy=multi-user.target

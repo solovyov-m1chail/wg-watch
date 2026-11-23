@@ -1,0 +1,15 @@
+# Файл: /opt/wg-watch/conf/policy.conf.example
+# Политики: что выполнить, когда подключаются/отключаются клиенты WireGuard.
+# Права: chown root:root policy.conf && chmod 600 policy.conf (иначе демон файл не загрузит).
+# Перечитать без перезапуска: kill -HUP $(cat <PID_DIR>/daemon.pid)
+# Названия секций — любые, секций может быть сколько угодно.
+
+[minecraft]
+peers = 10.10.10.5
+online_to_run_command  = systemctl start minecraft
+offline_to_run_command = systemctl stop minecraft
+online_skip_if = systemctl is-active --quiet minecraft
+offline_only_if_online_ran = yes
+offline_delay = 120
+command_timeout = 30
+enabled = yes

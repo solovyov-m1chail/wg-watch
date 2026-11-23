@@ -1,0 +1,40 @@
+[Unit]
+Description=WG-Watch Web Dashboard
+After=network-online.target wg-watch-daemon.service wg-watch-manager.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wg-watch
+Group=wg-watch
+WorkingDirectory=/opt/wg-watch/web
+EnvironmentFile=/opt/wg-watch/conf/wg-watch-web.env
+ExecStart=/opt/wg-watch/venv/bin/gunicorn \
+    --bind ${HOST}:${PORT} \
+    --workers 1 \
+    --threads 4 \
+    --pid /opt/wg-watch/pids/web.pid \
+    --access-logfile /dev/null \
+    --error-logfile - \
+    --log-level warning \
+    app:app
+Restart=on-failure
+RestartSec=10
+RestartPreventExitStatus=78
+KillMode=mixed
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wg-watch-web
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+NoNewPrivileges=true
+ReadWritePaths=/opt/wg-watch/pids /opt/wg-watch/logs
+
+[Install]
+WantedBy=multi-user.target

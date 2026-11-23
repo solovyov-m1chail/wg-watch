@@ -1,0 +1,1483 @@
+/* Файл: /opt/wg-watch/web/static/css/app.css
+   Стили дашборда wg-watch: тёмная/светлая темы через html[data-theme] и CSS-переменные,
+   шапка (sticky, blur, индикатор демона), статистика, вкладки, карточки пиров, спарклайны,
+   лента событий, баннер недоступного демона, модалки (создание, удаление, очистка журнала,
+   большой график), toast-уведомления, кастомные тултипы, стилизация нативных select и
+   цветного скроллбара, большой график трафика (ось Y + прокрутка, сетка, линия, заливка,
+   тултип, пометки простоя), анимации и prefers-reduced-motion, focus-visible, адаптивность. */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   1. ПЕРЕМЕННЫЕ ТЕМ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Тёмная тема ─────────────────────────────────────── */
+/* Селектор html[data-theme] нужен, чтобы стили не затрагивали кнопки переключателя темы с таким же атрибутом. */
+:root, html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-1:#0b0f14;
+  --bg-2:#131a22;
+
+  --panel:#171d25;
+  --panel-inset:#0f151c;
+  --panel-2:#1c232c;
+
+  --border:#29323d;
+  --border-soft:#1f2731;
+
+  --text:#e6edf3;
+  --text-soft:#c2ccd6;
+  --muted:#8b949e;
+
+  --accent:#4a90ff;
+  --accent-2:#3b7ee6;
+  --accent-ring:rgba(74,144,255,.28);
+
+  --green:#3fb950;
+  --red:#f85149;
+  --yellow:#d29922;
+  --purple:#bc8cff;
+
+  --green-bg:rgba(63,185,80,.14);
+  --red-bg:rgba(248,81,73,.14);
+  --yellow-bg:rgba(210,153,34,.14);
+  --purple-bg:rgba(188,140,255,.14);
+
+  --btn-text:#ffffff;
+
+  --shadow-card:0 1px 2px rgba(0,0,0,.25), 0 12px 32px rgba(0,0,0,.35);
+  --shadow-soft:0 1px 2px rgba(0,0,0,.20), 0 4px 12px rgba(0,0,0,.18);
+}
+
+/* ─── Светлая тема ───────────────────────────────────────────────────── */
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg-1:#eef2f7;
+  --bg-2:#e3e9f1;
+
+  --panel:#ffffff;
+  --panel-inset:#f6f8fb;
+  --panel-2:#f3f6fa;
+
+  --border:#e0e5ec;
+  --border-soft:#eef1f5;
+
+  --text:#0d1117;
+  --text-soft:#39424e;
+  --muted:#6a7684;
+
+  --accent:#0969da;
+  --accent-2:#0a5cc0;
+  --accent-ring:rgba(9,105,218,.22);
+
+  --green:#1a7f37;
+  --red:#cf222e;
+  --yellow:#9a6700;
+  --purple:#8250df;
+
+  --green-bg:rgba(26,127,55,.10);
+  --red-bg:rgba(207,34,46,.10);
+  --yellow-bg:rgba(154,103,0,.10);
+  --purple-bg:rgba(130,80,223,.10);
+
+  --btn-text:#ffffff;
+
+  --shadow-card:0 1px 2px rgba(27,31,36,.06), 0 12px 32px rgba(27,31,36,.10);
+  --shadow-soft:0 1px 2px rgba(27,31,36,.04), 0 4px 12px rgba(27,31,36,.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   2. БАЗОВЫЕ СТИЛИ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Сброс и body ───────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+/* Мгновенное переключение темы: на момент смены отключаем все transition, чтобы не было мерцания. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
+  background:
+    radial-gradient(1200px 600px at 50% -20%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%),
+    linear-gradient(160deg, var(--bg-1), var(--bg-2));
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Иконки ─────────────────────────────────────────────────────────── */
+/* Универсальный класс для всех SVG-иконок. */
+svg.icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   3. ШАПКА
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Контейнер шапки ────────────────────────────────────────────────── */
+header {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  gap: 8px;
+  z-index: 10;
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  -webkit-backdrop-filter: saturate(160%) blur(10px);
+}
+
+/* ─── Заголовок и хост ───────────────────────────────────────────────── */
+header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  margin-right: 14px;
+}
+
+header .host {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 520px;
+  margin-right: 14px;
+}
+
+/* ─── Логотип и индикатор ────────────────────────────────────────────── */
+header .logo {
+  width: 48px;
+  height: 48px;
+  display: block;
+  border-radius: 7px;
+  margin-right: 2px;
+  box-shadow: 0 4px 12px rgba(11, 98, 214, 0.25);
+}
+
+header .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  margin-left: -4px;
+  animation: pulse 2s infinite;
+}
+
+header .dot.err {
+  background: var(--red);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+/* ─── Распорка ───────────────────────────────────────────────────────── */
+.spacer { flex: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   4. ПЕРЕКЛЮЧАТЕЛИ И БЕЙДЖИ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Группа переключателей ──────────────────────────────────────────── */
+.toggle-group {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-soft);
+}
+
+.toggle-group button {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 5px 9px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  line-height: 1;
+  min-width: 28px;
+  transition: background-color .25s ease, color .25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Плавный переход и лёгкая подсветка при наведении. */
+.toggle-group button:hover:not(.active) {
+  color: var(--text);
+  background-color: var(--border-soft);
+}
+
+.toggle-group button.active {
+  background: var(--accent);
+  color: var(--btn-text);
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+/* ─── Бейджи ─────────────────────────────────────────────────────────── */
+.badge {
+  padding: 5px 10px;
+  border-radius: 9px;
+  font-size: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-soft);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.badge a:hover {
+  text-decoration: underline;
+}
+
+.badge.btn {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color .25s ease, border-color .25s ease, background-color .25s ease;
+}
+
+.badge.btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--panel-2);
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel-2));
+}
+
+.badge.btn:active {
+  transform: translateY(1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   5. СЕЛЕКТОРЫ И КНОПКИ С ОЧИСТКОЙ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Селектор частоты ───────────────────────────────────────────────── */
+#refreshRate {
+  box-sizing: border-box;
+  height: 27px;
+  padding: 0 8px;
+  margin-left: 4px;
+  background-color: var(--panel-2);
+  border: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .25s ease, color .25s ease;
+}
+
+#refreshRate:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+#refreshRate:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+  color: var(--text);
+}
+
+html[data-theme="dark"] #refreshRate option {
+  background-color: var(--panel);
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   6. ОСНОВНАЯ РАЗМЕТКА
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── main ───────────────────────────────────────────────────────────── */
+main {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ─── Статистика ─────────────────────────────────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: var(--border);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 40%, transparent), transparent);
+  opacity: .6;
+}
+
+.stat .label {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+
+.stat .value {
+  font-size: 24px;
+  font-weight: 650;
+  margin-top: 5px;
+  letter-spacing: -.01em;
+}
+
+.stat .value.green { color: var(--green); }
+.stat .value.red   { color: var(--red); }
+.stat .value.blue  { color: var(--accent); }
+
+/* ─── Вкладки ────────────────────────────────────────────────────────── */
+.tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: var(--btn-text);
+  border-color: var(--accent);
+  box-shadow: 0 1px 3px var(--accent-ring);
+}
+
+.tab:hover:not(.active) {
+  color: var(--text);
+  border-color: var(--border-soft);
+}
+
+/* ─── Кнопка «Создать» ───────────────────────────────────────────────── */
+.btn-create {
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--btn-text);
+  transition: background-color .25s ease, border-color .25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-create:hover {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   7. КАРТОЧКИ ПИРОВ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Сетка и карточка ───────────────────────────────────────────────── */
+.peers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+}
+
+.peer {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.peer:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.peer:active {
+  transform: translateY(-2px);   /* При нажатии карточка остаётся приподнятой, не «проваливается». */
+}
+
+.peer.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring), var(--shadow-soft);
+}
+
+.peer.offline {
+  opacity: .65;
+}
+
+/* ─── Верхняя строка ─────────────────────────────────────────────────── */
+.peer .top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.peer .name {
+  font-weight: 650;
+  font-size: 15px;
+  flex: 1;
+  letter-spacing: -.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+/* Иконка копирования ключа. */
+.peer .hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--accent);
+  margin-left: 6px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.peer .hint:hover {
+  background: var(--accent-ring);
+}
+
+/* ─── Кнопки на карточке ─────────────────────────────────────────────── */
+/* Кнопки скачивания и удаления. */
+.peer .btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.peer .btn-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.peer .btn-download:hover {
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+.peer .btn-delete:hover {
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+/* ─── Статус ─────────────────────────────────────────────────────────── */
+.peer .status {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 700;
+}
+
+.status.online  { background: var(--green-bg); color: var(--green); }
+.status.offline { background: var(--red-bg);   color: var(--red); }
+
+/* ─── Строки данных ──────────────────────────────────────────────────── */
+.peer .row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  color: var(--muted);
+}
+
+.peer .row span:last-child {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  max-width: 62%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* ─── Полоса трафика ─────────────────────────────────────────────────── */
+.peer .bar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 4px 0;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.peer .bar-row .val-rx { color: var(--green); font-weight: 600; font-variant-numeric: tabular-nums; display: flex; align-items: center; }
+.peer .bar-row .val-tx { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; display: flex; align-items: center; }
+.peer .bar-row .label { flex: 1; text-align: center; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.icon-arrow { width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 3px; }
+.icon-arrow.down { stroke: var(--green); }
+.icon-arrow.up { stroke: var(--accent); }
+
+.peer .bar { height:12px; background:var(--panel-2); border-radius:6px;
+  margin-top:6px; overflow:hidden; display:flex;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
+
+.peer .bar .rx { background: var(--green);  height: 100%; }
+.peer .bar .tx { background: var(--accent); height: 100%; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   8. СПАРКЛАЙНЫ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Контейнер ──────────────────────────────────────────────────────── */
+.sparkline-container {
+  margin-top: 10px;
+  height: 24px;
+  min-height: 24px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sparkline-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  opacity: 0.5;
+}
+
+.peer:hover .sparkline-container svg,
+.peer.selected .sparkline-container svg {
+  opacity: 1;
+}
+
+/* ─── Линия графика ──────────────────────────────────────────────────── */
+.sparkline-container polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.sparkline-container polyline.rx-line { stroke: var(--green); }
+
+.sparkline-container line.spark-base {
+  stroke: var(--border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.sparkline-container polyline.spark-stale {
+  opacity: 0.35;
+}
+
+/* ─── Заглушка «нет данных» ──────────────────────────────────────────── */
+.sparkline-container.sparkline-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.sparkline-container.sparkline-empty svg {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   9. ЛЕНТА СОБЫТИЙ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Шапка ленты ────────────────────────────────────────────────────── */
+.events-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 10px;
+  flex-wrap: wrap;
+}
+
+/* Заголовок ленты (в виде бейджа). */
+.events-header h2.section {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  background: var(--panel-2);
+  border: 1px solid var(--border-soft);
+  padding: 0 12px;
+  border-radius: 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 27px;
+  box-sizing: border-box;
+  margin-right: auto;
+  transition: color .2s, background-color .2s, border-color .2s;
+}
+
+.events-header h2.section.filtered {
+  color: var(--accent);
+  border-color: var(--accent-ring);
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel-2));
+}
+
+/* Счётчик (в виде бейджа). */
+.events-count {
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--panel-2);
+  border: 1px solid var(--border-soft);
+  padding: 4px 10px;
+  border-radius: 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 27px;
+  box-sizing: border-box;
+}
+
+/* ─── Кнопка «Очистить фильтр» ───────────────────────────────────────── */
+.events-clear {
+  display: none;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+
+.events-clear:active {
+  transform: translateY(1px);
+  background: var(--border);
+}
+.events-clear.visible { display: inline-block; }
+
+.events-clear:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─── Селектор сортировки ────────────────────────────────────────────── */
+.events-sort {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s ease;
+}
+
+.events-sort:hover { border-color: var(--accent); }
+.events-sort:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+/* ─── Контейнер и строки событий ─────────────────────────────────────── */
+.events {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.event {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.event:last-child { border-bottom: none; }
+
+.event .ts {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 150px;
+  font-size: 12px;
+}
+
+.event .icon {
+  width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Цвета иконок в событиях (через наследование цвета родителя). */
+.event.online         .icon { color: var(--green); }
+.event.offline        .icon { color: var(--red); }
+.event.roam           .icon { color: var(--purple); }
+.event.error          .icon { color: var(--yellow); }
+.event.client_created .icon { color: var(--green); }
+.event.client_deleted .icon { color: var(--red); }
+
+.event .type {
+  font-weight: 700;
+  min-width: 72px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.event.online  .type { color: var(--green); }
+.event.offline .type { color: var(--red); }
+.event.roam    .type { color: var(--purple); }
+.event.error   .type { color: var(--yellow); }
+.event.client_created .type { color: var(--green); }
+.event.client_deleted .type { color: var(--red); }
+
+.event .msg {
+  flex: 1;
+  color: var(--text-soft);
+}
+
+.event .msg b {
+  color: var(--text);
+  font-weight: 650;
+}
+
+/* ─── Пустое состояние ───────────────────────────────────────────────── */
+.empty {
+  grid-column: 1 / -1;
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   10. АДАПТИВНОСТЬ И ФОКУСЫ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Адаптивность ───────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  main { padding: 16px; }
+  header { padding: 12px 16px; }
+  .event { flex-wrap: wrap; gap: 6px 10px; }
+  .event .ts { min-width: auto; font-size: 11px; }
+}
+
+/* ─── Фокусы ─────────────────────────────────────────────────────────── */
+.tab:focus-visible, .peer:focus-visible, .badge.btn:focus-visible,
+.toggle-group button:focus-visible, .events-clear:focus-visible,
+.events-sort:focus-visible, .btn-create:focus-visible, .peer .btn-icon:focus-visible, .peer .hint:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Уменьшение движения ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  header .dot { animation: none; }
+  .peer .bar .rx, .peer .bar .tx { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   11. БАННЕР «ДЕМОН НЕ ЗАПУЩЕН»
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Баннер ─────────────────────────────────────────────────────────── */
+.daemon-banner {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 18px 22px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--red);
+  border-color: color-mix(in srgb, var(--red) 55%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--red) 25%, transparent),
+    0 18px 48px rgba(0, 0, 0, .45);
+  color: var(--text);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.daemon-banner.visible {
+  display: block;
+  animation: daemon-banner-in .18s ease-out;
+}
+
+.daemon-banner .title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 6px;
+}
+
+.daemon-banner .title .pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1.4s infinite;
+  flex: 0 0 auto;
+}
+
+.daemon-banner .hint {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin-top: 8px;
+  word-break: break-all;
+}
+
+@keyframes daemon-banner-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 6px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daemon-banner.visible { animation: none; }
+  .daemon-banner .title .pulse-dot { animation: none; }
+}
+
+/* ─── Затемнение и блокировка кликов ─────────────────────────────────── */
+body.daemon-down::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  cursor: not-allowed;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   12. МОДАЛЬНЫЕ ОКНА
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Оверлей ────────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.modal-overlay.visible {
+  display: flex;
+}
+
+/* ─── Окно ───────────────────────────────────────────────────────────── */
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-card);
+}
+.modal-overlay.visible .modal { animation: modal-in .18s ease-out; }
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay.visible .modal { animation: none; }
+}
+.modal h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--text);
+}
+.modal input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-inset);
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+.modal input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+/* ─── Кнопки модалки ─────────────────────────────────────────────────── */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color .2s ease;
+}
+.modal-btn.cancel {
+  background: var(--panel-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.modal-btn.cancel:hover {
+  background: var(--border);
+}
+.modal-btn.primary {
+  background: var(--accent);
+  color: var(--btn-text);
+}
+.modal-btn.primary:hover {
+  background: var(--accent-2);
+}
+.modal-btn.danger {
+  background: var(--red);
+  color: #fff;
+}
+.modal-btn.danger:hover {
+  background: color-mix(in srgb, var(--red) 80%, black);
+}
+.modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   13. ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ (TOAST)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Контейнер ──────────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* ─── Тост ───────────────────────────────────────────────────────────── */
+.toast {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  max-width: 480px;
+  pointer-events: auto;
+  animation: toast-in .4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.success { border-left-color: var(--green); }
+.toast.error   { border-left-color: var(--red); }
+
+.toast svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+.toast.success svg { stroke: var(--green); }
+.toast.error svg   { stroke: var(--red); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast.hiding {
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   14. ЦВЕТА ИКОНОК ТЕМЫ (СОЛНЦЕ И ЛУНА)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+#themeToggle button[data-theme="light"]:not(.active) svg {
+  color: #f1c40f;
+}
+#themeToggle button[data-theme="dark"]:not(.active) svg {
+  color: #8ab4f8;
+}
+#themeToggle button.active svg {
+  color: var(--btn-text) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   15. КАСТОМНЫЕ ТУЛТИПЫ
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.custom-tooltip {
+  position: fixed;
+  background: var(--text);
+  color: var(--panel);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  white-space: nowrap;            /* На десктопе подсказка в одну строку. */
+  max-width: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+}
+
+/* На узких экранах длинная подсказка иначе вылезла бы за край: разрешаем перенос. */
+@media (max-width: 600px) {
+  .custom-tooltip {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: calc(100vw - 16px);
+  }
+}
+
+.custom-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   16. СТИЛИЗАЦИЯ ВЫПАДАЮЩИХ СПИСКОВ И СКРОЛЛБАРА
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Опции select ───────────────────────────────────────────────────── */
+select option {
+  background-color: var(--panel);
+  color: var(--text);
+}
+
+html[data-theme="dark"] select {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] select {
+  color-scheme: light;
+}
+
+/* ─── Селекторы с ховером ────────────────────────────────────────────── */
+#refreshRate:hover, .events-sort:hover, #eventsTruncate:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+  color: var(--text);
+}
+
+#refreshRate, .events-sort {
+  background-color: var(--panel-2);
+  color: var(--text);
+  border-color: var(--border-soft);
+}
+
+#eventsTruncate:active {
+ transform: translateY(1px);
+ background: var(--border);
+}
+
+/* Убирает залипание синей рамки у кнопки очистки журнала. */
+#eventsTruncate:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--border) !important;
+}
+
+#eventsTruncate:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* ─── Скроллбар ──────────────────────────────────────────────────────── */
+/* Синий скроллбар в цвет интерфейса. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 5px;
+  border: 2px solid var(--bg-1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-2);
+}
+
+/* Нажатие на ползунок: тот же тёмный синий, без «подсветки» браузера. */
+::-webkit-scrollbar-thumb:active {
+  background: var(--accent-2);
+}
+
+/* Стрелки и угол: в Chrome/Edge не нужны. */
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-corner {
+  background: var(--bg-1);
+}
+
+/* Только для Firefox. ВАЖНО: в Chrome/Edge свойства scrollbar-width/scrollbar-color отключают правила ::-webkit-scrollbar
+   (ползунок становится нативным и при нажатии меняет цвет сам), поэтому задаём их строго там, где есть Firefox. */
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--bg-1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   17. БОЛЬШОЙ ГРАФИК
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.sparkline-container {
+  cursor: zoom-in;
+  transition: background-color 0.2s;
+}
+.sparkline-container:hover {
+  background-color: var(--border-soft);
+}
+
+.big-chart-container {
+  width: 100%;
+  height: 400px;
+  background: var(--panel-inset);
+  border-radius: 8px;
+  position: relative;
+  cursor: crosshair;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.big-chart-container svg {
+  display: block;
+}
+
+/* Ось Y неподвижна, остальной график листается по горизонтали. */
+.chart-yaxis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+.chart-scroll {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;            /* Свайп по графику листает только график, страница не скроллится. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#bigChartSvg {
+  touch-action: pan-x;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.big-chart-container { overscroll-behavior: contain; }
+
+/* Длинное имя клиента: многоточие внутри flex-контейнера работает только на вложенном span. */
+.peer .name .name-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.peer .name .hint { flex: 0 0 auto; }
+
+.chart-inner {
+  position: relative;
+}
+.chart-scroll.dragging,
+.chart-scroll.dragging #bigChartHover {
+  cursor: grabbing;
+}
+
+/* Сетка графика (в клеточку) */
+.chart-grid-line {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.4; /* Сделали чуть прозрачнее, чтобы не мешала */
+}
+
+/* Текст на осях (цифры и время) */
+.chart-axis-text {
+  fill: var(--text) !important; /* Принудительно белый (или черный в светлой теме) */
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 500;
+}
+
+#bigChartModal .modal {
+  color: var(--text);
+}
+
+#bigChartTitle {
+  color: var(--text);
+}
+
+/* Линия графика */
+.chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.chart-line.rx { stroke: var(--green); }
+.chart-line.tx { stroke: var(--accent); }
+
+#bigChartHover { cursor: crosshair; }
+
+/* Тултип на графике */
+.chart-tooltip {
+  position: absolute;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  z-index: 10;
+  white-space: nowrap;
+  box-shadow: var(--shadow-soft);
+}
+
+.chart-tooltip.visible {
+  opacity: 1;
+}
+
+.chart-tooltip .time {
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.chart-tooltip .rx-val { color: var(--green); font-weight: 600; display: block; }
+.chart-tooltip .tx-val { color: var(--accent); font-weight: 600; display: block; }
+
+/* Модалка большого графика: широкое окно, заголовок и кнопка закрытия. */
+#bigChartModal .modal {
+  max-width: 900px;
+  width: calc(100% - 32px);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.modal-header h3 { margin: 0; }
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.modal-close:hover { color: var(--text); background: var(--panel-inset); }
+.modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chart-hint {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chart-hint:empty { display: none; }
+@media (max-width: 600px) {
+  .big-chart-container { height: 300px; }
+}
+
+/* Сетка графика: в светлой теме делаем заметнее. */
+html[data-theme="light"] .chart-grid-line {
+  stroke: #8b98a9;
+  opacity: 0.55;
+}
+html[data-theme="light"] .big-chart-container {
+  background: #f4f7fb;
+}
+
+/* Подсказка под точкой, когда над ней нет места (пики у верхнего края). */
+.chart-tooltip.below {
+  transform: translate(-50%, 0);
+  margin-top: 12px;
+}
+
+/* Заглушка с доступной историей: выглядит как ссылка на график. */
+.sparkline-container.sparkline-empty.has-history {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* Заливка под линией большого графика. */
+.chart-area {
+  stroke: none;
+  opacity: 0.14;
+}
+.chart-area.rx { fill: var(--green); }
+.chart-area.tx { fill: var(--accent); }
+
+/* Простой на большом графике: сжатая пометка вместо многочасовой пустоты. */
+.chart-break-bg {
+  fill: var(--muted);
+  opacity: 0.08;
+}
+.chart-break-line {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+}
+.chart-break-text {
+  fill: var(--muted);
+  font-size: 11px;
+}

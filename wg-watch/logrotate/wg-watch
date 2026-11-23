@@ -1,0 +1,13 @@
+/opt/wg-watch/logs/wg-watch-daemon.log
+/opt/wg-watch/logs/policy.log
+/opt/wg-watch/logs/wg-watch-manager.log
+/opt/wg-watch/logs/wg-watch-web.log
+{
+missingok
+dateext
+weekly
+rotate 3
+notifempty
+compress
+copytruncate
+}
