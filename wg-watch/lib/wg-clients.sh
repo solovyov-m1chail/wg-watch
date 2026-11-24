@@ -3,6 +3,7 @@
 # Общая библиотека управления клиентами WireGuard.
 # Подсеть клиентов настраивается через env: CLIENT_SUBNET_PREFIX, CLIENT_IP_MIN,
 # CLIENT_IP_MAX, SERVER_IP_LAST_OCTET.
+# wgcfg_list / wgcfg_print_list — список клиентов (таблица или JSON) для --list в CLI-скриптах.
 # Не использует set -e: решение об обработке ошибок остаётся за вызывающим кодом.
 set -u
 set -o pipefail
@@ -138,6 +139,56 @@ wgcfg_validate_ip() {
 
 wgcfg_client_exists() {
     grep -qxF "# Client $1" "$SERVER_CONFIG"
+}
+
+# Выводит список клиентов из конфига сервера: строки "имя<TAB>ip", отсортированные по IP.
+# Клиентом считается блок "# Client NAME" + первый AllowedIPs после него.
+wgcfg_list() {
+    [[ -r "$SERVER_CONFIG" ]] || return 1
+    awk '
+        /^# Client / { name = substr($0, 10); next }
+        name != "" && /^AllowedIPs[ \t]*=/ {
+            v = $0
+            sub(/^AllowedIPs[ \t]*=[ \t]*/, "", v)
+            split(v, a, ",")
+            ip = a[1]
+            gsub(/[ \t]/, "", ip)
+            sub(/\/32$/, "", ip)
+            printf "%s\t%s\n", name, ip
+            name = ""
+        }
+    ' "$SERVER_CONFIG" | sort -t $'\t' -k2,2V
+}
+
+# Печатает список клиентов для человека (таблица) или в JSON (аргумент 1 = JSON-режим).
+# JSON: {"ok":true,"clients":[{"name":"...","ip":"..."}]}
+wgcfg_print_list() {
+    local json="${1:-0}" rows name ip count=0 sep=""
+    rows=$(wgcfg_list) || return 1
+
+    if [[ "$json" == "1" ]]; then
+        printf '{"ok":true,"clients":['
+        while IFS=$'\t' read -r name ip; do
+            [[ -z "$name" ]] && continue
+            printf '%s{"name":"%s","ip":"%s"}' "$sep" "$(_json_escape "$name")" "$(_json_escape "$ip")"
+            sep=","
+        done <<< "$rows"
+        printf ']}\n'
+        return 0
+    fi
+
+    if [[ -z "$rows" ]]; then
+        echo "No clients."
+        return 0
+    fi
+    printf '%-32s %s\n' "NAME" "IP"
+    while IFS=$'\t' read -r name ip; do
+        [[ -z "$name" ]] && continue
+        printf '%-32s %s\n' "$name" "$ip"
+        count=$((count + 1))
+    done <<< "$rows"
+    echo "Total: $count"
+    return 0
 }
 
 # Находит свободный IP в подсети CLIENT_SUBNET_PREFIX.
