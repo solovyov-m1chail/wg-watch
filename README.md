@@ -328,18 +328,50 @@ enabled = yes
   <img src="screenshots/events-dark.png" width="49%">
 </p>
 
-### Вход
+### Страница входа
 
-![Страница входа](screenshots/login-ru.png)
+<p align="center">
+  <img src="screenshots/login-ru.png" width="32%">
+  <img src="screenshots/login-en.png" width="32%">
+  <img src="screenshots/login-dark.png" width="32%">
+</p>
 
-### Защита от некорректного имени клиента
+<p align="center">
+  <img src="screenshots/login-input-null.png" width="49%">
+  <img src="screenshots/login-invalid.png" width="49%">
+</p>
 
-![Валидация имени клиента](screenshots/manager-validation-input.png)
+<p align="center">
+  <img src="screenshots/login-banned.png" width="60%">
+</p>
+
+### Создание клиента
+
+<p align="center">
+  <img src="screenshots/modal-window-create-client.png" width="49%">
+  <img src="screenshots/manager-validation-input.png" width="49%">
+</p>
+
+### Удаление клиента
+
+<p align="center">
+  <img src="screenshots/modal-window-delete-client.png" width="60%">
+</p>
+
+### Очистка журнала событий
+
+<p align="center">
+  <img src="screenshots/modal-window-cleaned-events-log.png" width="60%">
+</p>
+
+### Завершённая сессия
+
+![Истекла сессия](screenshots/session-expired.png)
 
 ### Индикация недоступности демона
 
 ![Демон недоступен](screenshots/daemon-unavailable.png)
 
-### Индикация недоступности менжера
+### Индикация недоступности менеджера
 
-![Менежер недоступен](screenshots/manager-unavailable.png)
+![Менеджер недоступен](screenshots/manager-unavailable.png)
