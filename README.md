@@ -339,3 +339,7 @@ enabled = yes
 ### Индикация недоступности демона
 
 ![Демон недоступен](screenshots/daemon-unavailable.png)
+
+### Индикация недоступности менжера
+
+![Менежер недоступен](screenshots/manager-unavailable.png)
