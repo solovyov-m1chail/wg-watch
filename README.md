@@ -67,20 +67,22 @@
 
 **Графики трафика**
 
+Наведите мышь на график, чтобы увидеть точные значения; колесо мыши или перетаскивание листают график.
+
 <p align="center">
-  <img src="screenshots/traffic-chart-light.png" width="49%" alt="График трафика, светлая тема">
-  <img src="screenshots/traffic-chart-dark.png" width="49%" alt="График трафика, тёмная тема">
-  <br><sub>Интерактивный график трафика</sub>
+  <img src="screenshots/traffic-chart-light.png" width="49%" alt="График входящего трафика, светлая тема">
+  <img src="screenshots/traffic-chart-dark.png" width="49%" alt="График исходящего трафика, тёмная тема">
+  <br><sub>Входящий трафик (светлая тема) &nbsp;·&nbsp; Исходящий трафик (тёмная тема)</sub>
 </p>
 
 **Индикация недоступности сервисов**
 
-Если демон или менеджер не отвечают, дашборд показывает это явным баннером.
+Если демон мониторинга не работает, дашборд показывает баннер «Мониторинг не работает». Если недоступен менеджер, при попытке создать клиента появляется уведомление «Служба управления клиентами недоступна».
 
 <p align="center">
-  <img src="screenshots/daemon-unavailable.png" width="49%" alt="Демон мониторинга недоступен">
-  <img src="screenshots/manager-unavailable.png" width="49%" alt="Менеджер недоступен">
-  <br><sub>Демон недоступен &nbsp;·&nbsp; Менеджер недоступен</sub>
+  <img src="screenshots/daemon-unavailable.png" width="49%" alt="Баннер: мониторинг не работает">
+  <img src="screenshots/manager-unavailable.png" width="49%" alt="Уведомление: служба управления клиентами недоступна">
+  <br><sub>Демон мониторинга не запущен &nbsp;·&nbsp; Менеджер недоступен</sub>
 </p>
 
 ### События
@@ -89,14 +91,18 @@
 - Фильтр, сортировка, скачивание и очистка из интерфейса. Журнал автоматически обрезается по возрасту и по размеру.
 
 <p align="center">
-  <img src="screenshots/events-light.png" width="49%" alt="Журнал событий, светлая тема">
-  <img src="screenshots/events-dark.png" width="49%" alt="Журнал событий, тёмная тема">
-  <br><sub>Журнал событий</sub>
+  <img src="screenshots/events-light.png" width="100%" alt="Лента событий, светлая тема">
+  <br><sub>Лента событий: светлая тема</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/events-dark.png" width="100%" alt="Лента событий, тёмная тема">
+  <br><sub>Лента событий: тёмная тема</sub>
 </p>
 
 <p align="center">
   <img src="screenshots/modal-window-cleaned-events-log.png" width="49%" alt="Окно очистки журнала событий">
-  <br><sub>Очистка журнала из интерфейса</sub>
+  <br><sub>Подтверждение очистки журнала</sub>
 </p>
 
 ### Уведомления
@@ -120,7 +126,7 @@
 
 <p align="center">
   <img src="screenshots/manager-validation-input.png" width="60%" alt="Валидация имени клиента">
-  <br><sub>Валидация имени клиента (защита от некорректного ввода)</sub>
+  <br><sub>Недопустимое имя (<code>cat /etc/passwd</code>) отклоняется, интерфейс подсказывает разрешённые символы: латиница, цифры, точка, тире, подчёркивание</sub>
 </p>
 
 ### Политики (необязательно)
@@ -197,10 +203,10 @@
 **Как это выглядит на странице входа**
 
 <p align="center">
-  <img src="screenshots/login-input-null.png" width="32%" alt="Вход: пустые поля">
-  <img src="screenshots/login-invalid.png" width="32%" alt="Вход: неверные данные">
-  <img src="screenshots/login-banned.png" width="32%" alt="Вход: временный бан">
-  <br><sub>Пустой ввод &nbsp;·&nbsp; Неверные данные &nbsp;·&nbsp; Бан после неудачных попыток</sub>
+  <img src="screenshots/login-input-null.png" width="32%" alt="Вход: пустые логин и пароль">
+  <img src="screenshots/login-invalid.png" width="32%" alt="Вход: неверный логин или пароль">
+  <img src="screenshots/login-banned.png" width="32%" alt="Вход: слишком много попыток, временная блокировка">
+  <br><sub>Пустые поля &nbsp;·&nbsp; Неверный логин или пароль &nbsp;·&nbsp; Блокировка после неудачных попыток</sub>
 </p>
 
 <p align="center">
