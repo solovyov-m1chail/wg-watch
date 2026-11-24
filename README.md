@@ -233,7 +233,7 @@
 - Linux с systemd.
 - Утилиты WireGuard (`wg`, `wg-quick`), интерфейс управляется как `wg-quick@<интерфейс>`.
 - Go (версия — в `go.mod`) для сборки демона и менеджера.
-- Python 3 (разрабатывалось на 3.13) с Flask, requests и gunicorn; `redis` — по желанию.
+- Python 3 (разрабатывалось на 3.13) с модулем `venv` (на Debian/Ubuntu это пакет `python3-venv`). Зависимости веб-части (Flask, gunicorn, requests и др.) ставятся в виртуальное окружение из `requirements.txt`; `redis` нужен только если вы хотите хранить счётчики rate-limit в Redis.
 - `flock`, `awk`, `timeout` (util-linux / coreutils).
 - Для почты: команда `mail` из GNU Mailutils и MTA, например postfix (скрипты используют синтаксис `-E 'set sendmail=…'`).
 - Reverse proxy для HTTPS (пример для nginx ниже).
@@ -280,7 +280,15 @@
    cd /opt/wg-watch/src/manager && ./build.sh
    ```
    Бинарники окажутся в `bin/`.
-5. **Создайте виртуальное окружение Python** и поставьте Flask, requests и gunicorn (плюс `redis`, если используете). Поправьте `ExecStart` в `systemd/wg-watch-web.service` под свой путь к venv.
+5. **Создайте виртуальное окружение Python** для веб-части и поставьте зависимости из `requirements.txt` (с точными версиями, на которых всё проверялось):
+   ```bash
+   cd /opt/wg-watch
+   python3 -m venv venv
+   ./venv/bin/pip install -r requirements.txt
+   ```
+   В моей установке venv лежит в `/opt/wg-watch/venv`. Если у вас другой путь, поправьте `ExecStart` в `systemd/wg-watch-web.service`. Проверьте, что непривилегированный пользователь `wg-watch` может читать каталог `venv`.
+
+   Окружение нужно создавать на самом сервере, а не копировать с другой машины: venv привязан к путям и версии Python.
 6. **Напишите конфиги** в `conf/` (см. [Конфигурация](#конфигурация)). Токены генерируйте командой `openssl rand -base64 32`.
 7. **Сделайте копию `/etc/wireguard`**, затем внимательно проверьте `conf/wg-clients.env`.
 8. **Установите юниты и запустите сервисы:**
@@ -382,6 +390,7 @@ enabled = yes
 
 - **Логи:** `logs/` (`wg-watch-daemon.log`, `wg-watch-manager.log`, `wg-watch-web.log`, `events.log`, `policy.log`); вывод сервисов также идёт в journald. `logrotate/wg-watch` раз в неделю ротирует логи сервисов; `events.log` обрезает сам демон.
 - **Статус:** `systemctl status wg-watch-daemon` (и `-manager`, `-web`).
+- **Обновление зависимостей веб-части:** поменяйте версии в `requirements.txt`, затем `/opt/wg-watch/venv/bin/pip install -r /opt/wg-watch/requirements.txt` и `systemctl restart wg-watch-web`.
 - **Коды выхода сервисов:** `0` — норма, `1` — ошибка, `78` — ошибка конфигурации.
 - **CLI-скрипты** (от root, `--json` для машинного вывода):
   ```bash
@@ -402,17 +411,19 @@ enabled = yes
 
 ```
 /opt/wg-watch/
-├── bin/         собранные бинарники (daemon, manager)
-├── conf/        env-файлы, policy.conf
-├── data/        traffic-history.json
-├── lib/         wg-clients.sh
-├── logrotate/   правила ротации логов
-├── logs/        логи сервисов, events.log, policy.log
-├── pids/        PID- и lock-файлы
-├── scripts/     create-client.sh, delete-client.sh, download-client-config.sh
-├── src/         исходники Go: daemon/, manager/
-├── systemd/     unit-файлы
-└── web/         app.py, templates/, static/ (index.html, js/, css/, icons/)
+├── bin/              собранные бинарники (daemon, manager)
+├── conf/             env-файлы, policy.conf
+├── data/             traffic-history.json
+├── lib/              wg-clients.sh
+├── logrotate/        правила ротации логов
+├── logs/             логи сервисов, events.log, policy.log
+├── pids/             PID- и lock-файлы
+├── requirements.txt  зависимости Python для веб-части
+├── scripts/          create-client.sh, delete-client.sh, download-client-config.sh
+├── src/              исходники Go: daemon/, manager/
+├── systemd/          unit-файлы
+├── venv/             виртуальное окружение Python (создаётся на сервере, в репозитории его нет)
+└── web/              app.py, templates/, static/ (index.html, js/, css/, icons/)
 ```
 
 ---
