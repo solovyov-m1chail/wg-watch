@@ -307,8 +307,6 @@ enabled = yes
   <img src="screenshots/dashboard-dark-theme.png" width="49%">
 </p>
 
-### Клиент онлайн
-
 <p align="center">
   <img src="screenshots/peer-test-online-light.png" width="49%">
   <img src="screenshots/peer-test-online-dark.png" width="49%">
@@ -328,6 +326,10 @@ enabled = yes
   <img src="screenshots/events-dark.png" width="49%">
 </p>
 
+<p align="center">
+  <img src="screenshots/modal-window-cleaned-events-log.png" width="49%">
+</p>
+
 ### Страница входа
 
 <p align="center">
@@ -337,41 +339,38 @@ enabled = yes
 </p>
 
 <p align="center">
-  <img src="screenshots/login-input-null.png" width="49%">
-  <img src="screenshots/login-invalid.png" width="49%">
+  <img src="screenshots/login-input-null.png" width="32%">
+  <img src="screenshots/login-invalid.png" width="32%">
+  <img src="screenshots/login-banned.png" width="32%">
 </p>
 
 <p align="center">
-  <img src="screenshots/login-banned.png" width="60%">
+  <img src="screenshots/session-expired.png" width="49%">
 </p>
 
 ### Создание клиента
 
 <p align="center">
   <img src="screenshots/modal-window-create-client.png" width="49%">
-  <img src="screenshots/manager-validation-input.png" width="49%">
+</p>
+
+### Валидация имени клиента (защита от некорректного ввода)
+
+Перед запуском скриптов имя клиента проверяется на трёх уровнях (Flask → менеджер → shell), чтобы нельзя было сломать конфиг вредоносным вводом. Блокируются спецсимволы, пробелы и аргументы, начинающиеся с `-`. Разрешён шаблон: `^[A-Za-z0-9_-]{1,64}$`.
+
+<p align="center">
+  <img src="screenshots/manager-validation-input.png" width="60%">
 </p>
 
 ### Удаление клиента
 
 <p align="center">
-  <img src="screenshots/modal-window-delete-client.png" width="60%">
+  <img src="screenshots/modal-window-delete-client.png" width="49%">
 </p>
 
-### Очистка журнала событий
+### Индикация недоступности сервисов
 
 <p align="center">
-  <img src="screenshots/modal-window-cleaned-events-log.png" width="60%">
+  <img src="screenshots/daemon-unavailable.png" width="49%">
+  <img src="screenshots/manager-unavailable.png" width="49%">
 </p>
-
-### Завершённая сессия
-
-![Истекла сессия](screenshots/session-expired.png)
-
-### Индикация недоступности демона
-
-![Демон недоступен](screenshots/daemon-unavailable.png)
-
-### Индикация недоступности менеджера
-
-![Менеджер недоступен](screenshots/manager-unavailable.png)
